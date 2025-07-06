@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动贩卖机</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .product {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .product:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .product img {
+            width: 100%;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        .cart {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        .cart h3 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cart h3 span {
+            font-weight: normal;
+            color: #666;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>自动贩卖机</h1>
+        <div class="products" id="products">
+            <!-- 产品将通过JavaScript动态加载 -->
+        </div>
+        <div class="cart" id="cart">
+            <h3>购物车 <span id="cart-count">0</span></h3>
+            <ul id="cart-items"></ul>
+            <p>总计: <span id="total">0</span>元</p>
+            <button id="checkout">结算</button>
+        </div>
+    </div>
+
+    <script>
+        // 产品数据
+        const products = [
+        { id: 1, name: '可乐', price: 3, image: '1.jpg' },
+        { id: 2, name: '雪碧', price: 3, image: '2.jpg' },
+        { id: 3, name: '矿泉水', price: 2, image: '3.jpg' },
+        { id: 4, name: '薯片', price: 5, image: '4.jpg' },
+        { id: 5, name: '巧克力', price: 6, image: '5.jpg' },
+        { id: 6, name: '饼干', price: 4, image: '6.jpg' }
+        ];
+
+        // 购物车数据
+        let cart = [];
+
+        // 初始化产品列表
+        function initProducts() {
+            const productsContainer = document.getElementById('products');
+            products.forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.className = 'product';
+                productElement.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" onerror="this.src='placeholder.jpg'">
+                    <h4>${product.name}</h4>
+                    <p>¥${product.price}</p>
+                    <input type="number" min="1" value="1" class="quantity">
+                    <button class="add-to-cart">加入购物车</button>
+                `;
+                const quantityInput = productElement.querySelector('.quantity');
+                const addToCartButton = productElement.querySelector('.add-to-cart');
+                addToCartButton.addEventListener('click', () => addToCart(product, parseInt(quantityInput.value)));
+                productsContainer.appendChild(productElement);
+            });
+        }
+
+        // 添加到购物车
+        function addToCart(product, quantity) {
+            const existingItem = cart.find(item => item.id === product.id);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ ...product, quantity });
+            }
+            updateCart();
+            updateCartCount();
+        }
+
+        // 更新购物车显示
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            const totalElement = document.getElementById('total');
+            
+            cartItems.innerHTML = '';
+            let total = 0;
+            
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} x ${item.quantity} - ¥${item.price * item.quantity}`;
+                cartItems.appendChild(li);
+                total += item.price * item.quantity;
+            });
+            
+            totalElement.textContent = total;
+        }
+
+        // 更新购物车商品数量显示
+        function updateCartCount() {
+            const cartCountElement = document.getElementById('cart-count');
+            cartCountElement.textContent = cart.length;
+        }
+
+        // 结算
+        function checkout() {
+            if (cart.length === 0) {
+                alert('购物车为空，请先选择商品！');
+                return;
+            }
+            const cartItemsText = cart.map(item => `${item.name} x ${item.quantity} - ¥${item.price * item.quantity}`).join('\n');
+            alert(`结算成功！\n总金额: ¥${document.getElementById('total').textContent}\n商品列表:\n${cartItemsText}`);
+            cart = [];
+            updateCart();
+            updateCartCount();
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initProducts();
+            document.getElementById('checkout').addEventListener('click', checkout);
+        });
+    </script>
+</body>
+</html>
